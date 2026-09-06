@@ -31,7 +31,6 @@ canvas#game{position:absolute;inset:0;width:100%;height:100%;image-rendering:pix
 .chip{font-weight:700;font-size:13px;background:rgba(5,2,12,.78);border:1.5px solid var(--yellow);color:var(--yellow);border-radius:9px;padding:4px 9px;text-shadow:0 1px 0 #000}
 .chip.c{border-color:var(--cyan);color:var(--cyan)}
 .chip.p{border-color:var(--pink);color:var(--pink)}
-.chip.w{border-color:var(--purple);color:var(--purple)}
 #badges{display:flex;gap:4px;align-items:center;background:rgba(5,2,12,.78);border:1.5px solid #3a2a55;border-radius:9px;padding:4px 8px}
 .bdot{width:11px;height:11px;border-radius:50%;background:#241a38;border:1px solid #4a3a6a}
 .bdot.on{box-shadow:0 0 8px currentColor;background:currentColor}
@@ -88,12 +87,6 @@ canvas#game{position:absolute;inset:0;width:100%;height:100%;image-rendering:pix
 #classic .top{position:sticky;top:0;background:rgba(5,2,16,.92);padding:10px 0;z-index:2;border-bottom:1px solid #35235a}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){.star,#bg{animation:none}}
-.prizeGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.prizeBtn{background:#1a0f30;border:1.5px solid var(--pink);border-radius:10px;padding:10px;color:#fff;font-family:'Fredoka';cursor:pointer;text-align:left;transition:.15s}
-.prizeBtn:hover:not(:disabled){border-color:var(--yellow);background:#281548}
-.prizeBtn:disabled{opacity:.4;cursor:not-allowed}
-.prizeBtn b{color:var(--yellow);display:block;font-size:14px}
-.prizeBtn span{font-size:12px;color:var(--cyan)}
 </style>
 </head>
 <body>
@@ -110,7 +103,7 @@ canvas#game{position:absolute;inset:0;width:100%;height:100%;image-rendering:pix
     <canvas id="game" role="img" aria-label="Top-down pixel art world of Bunny Reckless"></canvas>
     <div id="hud" aria-hidden="true">
       <span class="chip" id="hCarrot">🥕 0</span><span class="chip c" id="hKey">🔑 0</span>
-      <span class="chip p" id="hRelic">💎 0/4</span><span class="chip w" id="hWings" style="display:none">🦇 FLYING</span><span id="badges"></span>
+      <span class="chip p" id="hRelic">💎 0/4</span><span id="badges"></span>
     </div>
     <canvas id="minimap" width="148" height="100" aria-hidden="true"></canvas>
     <div id="zoneToast" aria-hidden="true"></div>
@@ -175,8 +168,7 @@ canvas#game{position:absolute;inset:0;width:100%;height:100%;image-rendering:pix
   <h2>💎 Projects Cave — My Apps</h2>
   <p>I love making apps! Vibe-coding is like playing slots 🎰 — it helps to learn a little code.</p>
   <ul>
-    <li><a href="https://txterr.ju.mp" target="_blank" rel="noopener">TXTERR — text tools &amp; domain portal</a></li>
-    <li><a href="https://quantum.uwu.ai" target="_blank" rel="noopener">QUANTUM — Tawny keeps her paw on the pulse</a></li>
+    <li><a href="https://context.uwu.ai" target="_blank" rel="noopener">CONTEXT — count your text &amp; tokens</a></li>
     <li><a href="https://github.com/softbitestudio/usbunny" target="_blank" rel="noopener">USBunny</a></li>
     <li><a href="https://fur.uwu.ai" target="_blank" rel="noopener">FURBITS — by Soft Bite Studio</a></li>
     <li><a href="https://app.emergent.sh/register?ref=soft343731" target="_blank" rel="noopener">Emergent</a></li>
@@ -244,28 +236,16 @@ function genMap(){
 /* entities */
 const FURS={Tawny:'#a17c5a',Blossom:'#ffabd3',Sky:'#9ce1ff',Magenta:'#fc68f6',Lemon:'#fff72b',Grape:'#bd00ff'};
 let ents=[],player={x:35.5*T,y:25.5*T,dir:'down',step:0,moving:false,fur:'#a17c5a'};
-const addEnt=o=>{ents.push(o);return o;};
+const addEnt=o=>{ents.push(o);return o;};   // single factory — fixes "Identifier 'E' has already been declared"
 const solid=(x,y,w,h)=>({sx:x,sy:y,sw:w,sh:h});
 const linkRow=(l,u)=>`<div class="linkrow"><a href="${u}" target="_blank" rel="noopener">${l}</a><button class="cp" data-cp="${u}">COPY</button></div>`;
-
-/* 7 UrbEx Buildings Config */
-const URBEX_BUILDINGS = [
-  { id: 0, name: "Derelict Cabin", x: 10*T, y: 10*T, carrot: true },
-  { id: 1, name: "Old Shed", x: 22*T, y: 8*T, carrot: true },
-  { id: 2, name: "Abandoned Schoolhouse", x: 48*T, y: 8*T, isSaito: true },
-  { id: 3, name: "Overgrown Outpost", x: 50*T, y: 38*T, carrot: true },
-  { id: 4, name: "Mossy Cottage", x: 12*T, y: 38*T, carrot: true },
-  { id: 5, name: "Forgotten Bunker", x: 62*T, y: 10*T, carrot: true },
-  { id: 6, name: "Old Greenhouse", x: 22*T, y: 42*T, carrot: true }
-];
-
 function buildWorld(){
  ents=[];
  addEnt({type:'den',x:35.5*T,y:21*T,sort:21*T,panel:{t:'⧎ BUNNY RECKLESS',h:`<p><b>She/They ⚥</b> — Artist, Developer, Master Gardener, Fursuiter, Bumble Bunny.</p><p>꩙ Tawny is a PDX-based entrepreneur making <i>art for the Misfits, the Daydreamers, and anyone who likes a little Magic in their Mayhem</i>. <b>Join the Fluff Coven.</b></p><p>Home base: <b>decal den dot xyz</b> — GitHub + Vercel + SUPAbase. "It's something I own. Something I hold the keys to. ~♡"</p>`}});
- addEnt({type:'sign',x:33*T,y:26.6*T,hue:'#ebff00',...solid(33*T-4,26.6*T-4,10,6),panel:{t:'✦ How to Play',h:`<p><b>Move</b> WASD/Arrows · <b>Interact</b> Space/A · <b>Read</b> R/B · <b>Menu</b> Esc.</p><p>🥕 Break pots or UrbEx buildings for carrots — <b style="color:#00d1ff">Projects Cave</b> east opens for <b>3 carrots</b>.</p><p>🔑 A glowing key hides in <b style="color:#fc68f6">Contact Village</b> — it unlocks <b style="color:#24ff00">Gallery Grove</b>.</p><p>🍻 Enter the <b>Tavern</b> west of here to trade carrots for prizes or sign the guestbook!</p><p>🍄 Click mushrooms in the forest for a color switcheroo!</p>`}});
+ addEnt({type:'sign',x:33*T,y:26.6*T,hue:'#ebff00',...solid(33*T-4,26.6*T-4,10,6),panel:{t:'✦ How to Play',h:`<p><b>Move</b> WASD/Arrows · <b>Interact</b> Space/A · <b>Read</b> R/B · <b>Menu</b> Esc.</p><p>🥕 Break pots for carrots — <b style="color:#00d1ff">Projects Cave</b> east opens for <b>3 carrots</b>.</p><p>🔑 A glowing key hides in <b style="color:#fc68f6">Contact Village</b> — it unlocks <b style="color:#24ff00">Gallery Grove</b>.</p><p>🍻 The <b>Tavern</b> west of here keeps a guestbook. And a <b>warp hole</b> glows in the far south-east…</p>`}});
  addEnt({type:'pot',x:31*T,y:28.5*T,drop:'carrot',...solid(31*T-5,28.5*T-5,10,9)});
- addEnt({type:'npc',name:'Paw',fur:'#ffabd3',x:38.5*T,y:24*T,rx:[30,41],ry:[20,29],lines:['Hihi! I\'m Paw — keeper of the burrow~♪','This whole world IS Tawny\'s website. Every zone is a page!','North: About Tower 🗼 · West: Contact Village 🏘️ · East: Projects Cave 💎 · South: Gallery Grove 🎨','The cave gate is hungry: feed it 3 carrots. Pots and UrbEx buildings love hiding carrots.']});
- addEnt({type:'tavern',x:21.5*T,y:21*T,sort:22.4*T,...solid(19.6*T,19.4*T,3.9*T,2.9*T)});
+ addEnt({type:'npc',name:'Paw',fur:'#ffabd3',x:38.5*T,y:24*T,rx:[30,41],ry:[20,29],lines:['Hihi! I\'m Paw — keeper of the burrow~♪','This whole world IS Tawny\'s website. Every zone is a page!','North: About Tower 🗼 · West: Contact Village 🏘️ · East: Projects Cave 💎 · South: Gallery Grove 🎨','The cave gate is hungry: feed it 3 carrots. Pots love hiding carrots.']});
+ addEnt({type:'tavern',x:21.5*T,y:21*T,sort:22.4*T,...solid(19.6*T,19.4*T,3.9*T,2.9*T),panel:{t:'🍻 Fluff Coven Tavern',h:'<p>Warm carrot stew, louder stories, glitter in the floorboards. The tavern welcomes misfits and daydreamers.</p><p>The <b>guestbook podium</b> hums beside the door — leave your pawprint!</p>'}});
  addEnt({type:'podium',x:24.6*T,y:23.3*T,...solid(24.6*T-4,23.3*T-4,9,7)});
  addEnt({type:'tower',x:36*T,y:6.5*T,sort:8.6*T,...solid(34*T,4.6*T,4*T,4*T)});
  const bio=[
@@ -283,29 +263,17 @@ function buildWorld(){
  addEnt({type:'pot',x:14.6*T,y:29*T,drop:'key',glow:true,...solid(14.6*T-5,29*T-5,10,9)});
  addEnt({type:'npc',name:'Elder Hazel',fur:'#a17c5a',x:9.5*T,y:22.6*T,rx:[5,14],ry:[22,28],lines:['Welcome to Contact Village, little paw. Every signpost is a doorway to Tawny.','I own and operate Soft Bite Studio — where artists roam free and rabbits have glitter in their fur.','Cute and fluffy can still have fangs and bite back. Fluff n\' fangs 4ever! 🖤','A glowing key sits in a pot behind the pink house. Opens Gallery Grove, it does.']});
  addEnt({type:'gate',id:'cave',x:55*T,y:23.5*T,w:T,h:2*T,...solid(54.6*T,23*T,7,2*T)});
- const relics=[['TXTERR','Text tools & domain portal.','https://txterr.ju.mp'],['USBunny','A bunny-flavored USB multitool.','https://github.com/softbitestudio/usbunny'],['FURBITS','A Soft Bite Studio passion project — collaboration welcome!','https://fur.uwu.ai'],['Emergent','App-making magic — idea + 20 bucks = cool stuff.','https://app.emergent.sh/register?ref=soft343731']];
+ const relics=[['CONTEXT','Count your text & tokens.','https://context.uwu.ai'],['USBunny','A bunny-flavored USB multitool.','https://github.com/softbitestudio/usbunny'],['FURBITS','A Soft Bite Studio passion project — collaboration welcome!','https://fur.uwu.ai'],['Emergent','App-making magic — idea + 20 bucks = cool stuff.','https://app.emergent.sh/register?ref=soft343731']];
  [[60,21],[63.5,24.5],[60,27.5],[66,20.5]].forEach((p,i)=>addEnt({type:'pot',x:p[0]*T,y:p[1]*T,drop:'relic',relic:i,...solid(p[0]*T-5,p[1]*T-5,10,9)}));
- addEnt({type:'sign',x:52*T,y:18*T,hue:'#00d1ff',...solid(52*T-4,18*T-4,9,6),panel:{t:'⚡ Pulse Node',h:`<p>Tawny keeps her paw on the pulse.</p>${linkRow('quantum.uwu.ai','https://quantum.uwu.ai')}`}});
  [[58,19],[62,19],[67,22],[58,29],[65,29],[61,25.5],[68,26],[57,26]].forEach((p,i)=>addEnt({type:'crystal',x:p[0]*T,y:p[1]*T,hue:i%2?'#fc68f6':'#00d1ff',...solid(p[0]*T-4,p[1]*T-4,8,7)}));
  addEnt({type:'monstah',x:67*T,y:28.4*T,hidden:true,lines:['¡YOU\'VE RELEASED IT!! WHAT HAVE YOU D0NE‽ AhHHhhHHhh—–-','Hehe. Looks like you summoned the Monstah~♪','You want my secret? Then FACE ME, little bun. Reflect my glitch-orbs with your claw — three hits and I\'m yours. 🖤']});
  addEnt({type:'gate',id:'grove',x:36.5*T,y:35*T,w:2*T,h:T,...solid(36*T,34.6*T,2*T,7)});
- const art=[['Reckless Bunny','the OG troublemaker'],['Cyber Pirate Bunny Logo','arr, but make it neon'],['Daisy Mint','fresh as a spring server'],['Rabbit Ref Sheet','official bun anatomy'],['Watercolor Daze','dreamy drips'],['Bunstar','a star is bun'],['Whimsie Bunny','pure whimsy'],['✊%uD83C%u3FF3%uFE0F%u200D%u26A7%uFE0F%uD83C%u3FF3%uFE0F%u200D%uD83C%uDF08','pride, power, paws'],['Bunnyclaw','fluff with fangs'],['Chester Hare','by Tawny Bunn'],['Oh she is not amused','not. one. bit.']];
+ const art=[['Reckless Bunny','the OG troublemaker'],['Cyber Pirate Bunny Logo','arr, but make it neon'],['Daisy Mint','fresh as a spring server'],['Rabbit Ref Sheet','official bun anatomy'],['Watercolor Daze','dreamy drips'],['Bunstar','a star is bun'],['Whimsie Bunny','pure whimsy'],['✊⚧️🏳️‍⚧️','pride, power, paws'],['Bunnyclaw','fluff with fangs'],['Chester Hare','by Tawny Bunn'],['Oh she is not amused','not. one. bit.']];
  art.forEach((a,i)=>{const row=i<6?0:1,cx=30.6+(i%6)*2.15+(row?1.05:0),cy=38.6+row*2.6;
   addEnt({type:'easel',x:cx*T,y:cy*T,hue:i,...solid(cx*T-5,cy*T-4,10,7),panel:{t:'🎨 '+a[0],h:`<p><i>"${a[1]}"</i></p><p>From the sketchbook of Bunny Reckless — drawing since she could first hold a utensil.</p>`}});});
  addEnt({type:'stump',x:36.5*T,y:43.2*T,...solid(36.5*T-6,43.2*T-5,12,9),panel:{t:'💌 Stay in the Loop',h:`<p>The <b>3rd of every month</b>: discount codes, stickers, pages, random art projects.</p><p><b>THANK YOUUUUU °.•♪</b> Let's make the world a weirder place together~♪</p>${linkRow('Ko-fi — join the Fluff Coven','https://ko-fi.com/softbite')}`}});
- 
- /* Spawn 7 UrbEx Explorable Buildings */
- URBEX_BUILDINGS.forEach((b,i)=>{
-   addEnt({type:'urbex',bldgId:i,name:b.name,x:b.x,y:b.y,sort:b.y+8,...solid(b.x-14,b.y-8,28,18)});
- });
-
- /* Interactive Mushrooms */
- const shrooms=[[15,12],[28,8],[42,12],[52,32],[18,36],[60,38],[10,28],[48,42],[64,15],[32,44],[26,16],[44,22]];
- shrooms.forEach(p=>addEnt({type:'shroom',x:p[0]*T,y:p[1]*T,...solid(p[0]*T-4,p[1]*T-4,8,8)}));
-
- /* Spawn dense forest trees */
  let placed=0,guard=0;
- while(placed<95&&guard++<2000){const x=2+((rnd()*(MW-4))|0),y=2+((rnd()*(MH-4))|0);
+ while(placed<34&&guard++<900){const x=2+((rnd()*(MW-4))|0),y=2+((rnd()*(MH-4))|0);
   if(zoneAt(x,y)!=='forest')continue;const t=at(x,y);if(t!==T_G&&t!==T_G2)continue;
   if(x>=18&&x<=26&&y>=17&&y<=25)continue;
   let near=false;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=MW||yy>=MH)continue;if(at(xx,yy)===T_DIRT)near=true;}
@@ -316,15 +284,10 @@ function buildWorld(){
  const facts=[['Fennel','#ffabd3',['Telegram is Tawny\'s favorite social. Don\'t tell the others.','Threads is surprisingly good for artists. Surprisingly!']],['Mochi','#9ce1ff',['She heard about ENCLAV — find friends by PERSONALITY! It\'s on F-Droid~','Most days: room, or park, in her own bubble, 3 projects at once.']],['Derby','#fff72b',['FURBITS is a passion project — collaboration welcome!','Ibis Paint gang rise up. BUNN!']]];
  facts.forEach(f=>{const fx=20+rnd()*30,fy=8+rnd()*32;
   addEnt({type:'npc',name:f[0],fur:f[1],x:fx*T,y:fy*T,rx:[fx-6,fx+6],ry:[fy-5,fy+5],lines:f[2]});});}
-
 /* state */
-const state={carrots:0,keys:0,relics:[],visited:{},gates:{cave:false,grove:false},monstah:false,bossDone:false,mazeDone:false,done:false,hasBatWings:false,lootedBldgs:{},prizes:{},switcherooT:0};
+const state={carrots:0,keys:0,relics:[],visited:{},gates:{cave:false,grove:false},monstah:false,bossDone:false,mazeDone:false,done:false};
 let curZone='burrow',dlg=null,panelOpen=false,menuOpen=false,classicOn=false,particlesOn=!RM,soundOn=true,gbOpen=false;
 let isInputDisabled=true,introActive=true;
-
-/* Interior state mode (UrbEx buildings & Tavern) */
-const interior={active:false,type:null,bldgId:null,name:'',retX:0,retY:0,hasCarrot:false,isSaito:false};
-
 /* input */
 const keys={up:0,down:0,left:0,right:0};
 const KEYMAP={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};
@@ -347,7 +310,6 @@ cvs.addEventListener('pointerdown',e=>{
  const r=cvs.getBoundingClientRect(),wx=(e.clientX-r.left)/zoom+camX,wy=(e.clientY-r.top)/zoom+camY;
  const dx=wx-player.x,dy=wy-(player.y-6);
  player.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');claw();});
-
 /* dialogue / panels */
 const dlgEl=document.getElementById('dialog'),dWho=document.getElementById('dWho'),dWhat=document.getElementById('dWhat');
 function say(name,lines,after){dlg={lines:[...lines],after};dWho.textContent=name;dWhat.textContent=lines[0];dlgEl.style.display='block';announce(name+': '+lines[0]);sfx.talk();}
@@ -358,26 +320,22 @@ const panelOv=document.getElementById('panelOv'),panelCard=document.getElementBy
 function openPanel(t,h){panelCard.innerHTML=`<button class="x" id="px">✕ CLOSE</button><h2>${t}</h2>${h}`;
  panelOv.style.display='flex';panelOpen=true;sfx.open();announce(t+' panel opened.');
  panelCard.querySelectorAll('.cp').forEach(b=>b.onclick=()=>{try{navigator.clipboard.writeText(b.dataset.cp);b.textContent='COPIED!';setTimeout(()=>b.textContent='COPY',1200);}catch(e){}});
- panelCard.querySelectorAll('.prizeBtn').forEach(b=>b.onclick=()=>buyPrize(b.dataset.prize));
  document.getElementById('px').onclick=closePanel;}
 function closePanel(){if(!panelOpen)return;panelOv.style.display='none';panelOpen=false;sfx.close();}
-
 const READS={
  burrow:['🏠 Home Burrow','Tawny — she/they ⚥ — artist, developer, master gardener, fursuiter, bumble bunny. PDX-based, making art for the misfits and daydreamers. Current quest: decal den dot xyz — GitHub + Vercel + Supabase. Join the Fluff Coven!'],
  tower:['🗼 About Tower','A polymath who does not know boredom. 3 projects at once, at home or the park. Partner: Saito. Tools: real-world mediums + Ibis Paint.'],
  village:['🏘️ Contact Village','"Social media is B.S. but I do my best." Telegram is the favorite; Threads is surprisingly good for artists. Communities: enbyfurs Telegram + Soft Bite Studio — fluff n fangs 4ever.'],
- cave:['💎 Projects Cave','"I love making apps!" Four relics rest in pots: TXTERR, USBunny, FURBITS, Emergent. Collect them all… and something may stir. Paw on the pulse at quantum.uwu.ai!'],
+ cave:['💎 Projects Cave','"I love making apps!" Four relics rest in pots: CONTEXT, USBunny, FURBITS, Emergent. Collect them all… and something may stir.'],
  grove:['🎨 Gallery Grove','Eleven artworks, from Reckless Bunny to "Oh she is not amused". Newsletter stump: codes on the 3rd of every month.'],
- forest:['🌲 Home Forest','Paths between pages. Explore 7 UrbEx buildings, click mushrooms, earn bat wings, and visit the Tavern!'],
+ forest:['🌲 Home Forest','Paths between pages. Pots hide carrots; rabbits hide facts; the Tavern keeps a guestbook; a hole in the south-east hums with maze-light…'],
  maze:['⚂ The Neon Maze','A pocket dimension of glowing hedges. Find the far portal to claim the secret address. The minimap only shows where your paws have been.']};
-
 function pressA(){
  if(introActive){advanceIntro();return;}
  if(classicOn||gbOpen)return;
  if(dlg){advanceDlg();return;}
  if(panelOpen||menuOpen)return;
  if(bossState.active){claw();return;}
- if(interior.active){tryInteriorInteract();return;}
  if(maze.active){if(Math.hypot(player.x-maze.gx,player.y-maze.gy)<20)
   say('Glitch',['bzzt— oh! A traveler! This maze eats signals for breakfast.','The portal hums in the FAR corner. The minimap remembers where your paws have been.','Bring back the secret address, and the hole will owe you forever~']);return;}
  tryInteract();}
@@ -387,7 +345,6 @@ function pressB(){
  if(panelOpen){closePanel();return;}
  if(menuOpen){closeMenu();return;}
  if(dlg){dlgEl.style.display='none';dlg=null;return;}
- if(interior.active){openPanel(interior.name,'<p>Inside an interior room. Walk to the door at the bottom to step back outside.</p>');return;}
  if(maze.active){openPanel(READS.maze[0],`<p>${READS.maze[1]}</p>`);return;}
  const r=READS[curZone];openPanel(r[0],`<p>${r[1]}</p>`);}
 function escPressed(){
@@ -396,22 +353,14 @@ function escPressed(){
  if(menuOpen){closeMenu();return;}
  if(dlg){dlgEl.style.display='none';dlg=null;return;}
  openMenu();}
-
 /* interaction */
 function facing(){return player.dir==='up'?[0,-1]:player.dir==='down'?[0,1]:player.dir==='left'?[-1,0]:[1,0];}
-function nearestInteractable(){const f=facing(),px=player.x+f[0]*13,py=player.y-6+f[1]*13;let best=null,bd=18;
+function nearestInteractable(){const f=facing(),px=player.x+f[0]*13,py=player.y-6+f[1]*13;let best=null,bd=16;
  for(const e of ents){if(e.broken||e.gone||e.hidden)continue;
-  if(!['pot','npc','sign','shelf','mailbox','stump','den','warp','gate','easel','monstah','tavern','podium','urbex','shroom'].includes(e.type))continue;
+  if(!['pot','npc','sign','shelf','mailbox','stump','den','warp','gate','easel','monstah','tavern','podium'].includes(e.type))continue;
   const d=Math.hypot(e.x-px,(e.y-6)-py);if(d<bd){bd=d;best=e;}}return best;}
-
 function tryInteract(){const e=nearestInteractable();if(!e)return;
  if(e.type==='pot')breakPot(e);
- else if(e.type==='shroom'){
-   state.switcherooT = 3.5; sfx.unlock(); toast('🍄 COLOR SWITCHEROO!');
-   announce('Color switcheroo activated!');
- }
- else if(e.type==='urbex')enterUrbex(e.bldgId);
- else if(e.type==='tavern')enterTavern();
  else if(e.type==='npc'){e.pause=999;say(e.name,e.lines,()=>{e.pause=0;});}
  else if(e.type==='monstah'){if(state.bossDone)say('THE MONSTAH',['🖤 hey, claw-machine. The cave\'s cozy with you in it.','Go sign the tavern guestbook. Tell them the Monstah sent you.']);
   else say('THE MONSTAH',e.lines,()=>startBoss());}
@@ -420,123 +369,35 @@ function tryInteract(){const e=nearestInteractable();if(!e)return;
  else if(e.type==='podium')openGuestbook();
  else if(e.type==='warp'){if(state.mazeDone)openPanel(e.panel.t,e.panel.h);else enterMaze();}
  else if(e.panel)openPanel(e.panel.t,e.panel.h);}
-
-/* UrbEx & Tavern Interiors */
-function enterUrbex(id){
- const b = URBEX_BUILDINGS[id];
- interior.active = true; interior.type = 'urbex'; interior.bldgId = id;
- interior.name = b.name; interior.retX = player.x; interior.retY = player.y + 16;
- interior.hasCarrot = b.carrot && !state.lootedBldgs[id];
- interior.isSaito = !!b.isSaito;
- player.x = 100; player.y = 120;
- sfx.open(); toast('🏠 ' + b.name); announce('Entered ' + b.name + '.');
-}
-
-function enterTavern(){
- interior.active = true; interior.type = 'tavern';
- interior.name = 'Fluff Coven Tavern Interior';
- interior.retX = player.x; interior.retY = player.y + 16;
- player.x = 100; player.y = 120;
- sfx.open(); toast('🍻 Fluff Coven Tavern Interior'); announce('Entered the Tavern interior.');
-}
-
-function exitInterior(){
- interior.active = false; player.x = interior.retX; player.y = interior.retY;
- sfx.close(); toast('Stepped outside');
-}
-
-function tryInteriorInteract(){
- if(player.y > 132){ exitInterior(); return; }
- if(interior.type === 'urbex'){
-   if(interior.hasCarrot && Math.hypot(player.x - 100, player.y - 80) < 20){
-     interior.hasCarrot = false; state.lootedBldgs[interior.bldgId] = true;
-     state.carrots++; updateHUD(); sfx.pickup();
-     toast("It's not stealing, it's UrbEx! 🥕");
-     announce("Found a carrot! It's not stealing, it's UrbEx!");
-   }
-   else if(interior.isSaito && Math.hypot(player.x - 100, player.y - 70) < 25){
-     say('Saito da Kitsune', [
-       'Hey there, fellow explorer! Saito da Kitsune here! 🦊',
-       'UrbEx (urban exploring) is strictly one of my fav hobbies!',
-       'Tawny and I once discovered an entire abandoned school together! It was epic!',
-       'Here, take these BAT WINGS! Fly high and glide around the forest!'
-     ], () => {
-       if(!state.hasBatWings){
-         state.hasBatWings = true; updateHUD(); sfx.badge(); confetti(player.x, player.y-10, 50);
-         toast('🦇 BAT WINGS ACQUIRED!');
-         announce('Saito handed you Bat Wings! Speed boost and free flight unlocked!');
-       }
-       openPanel('🦊 Saito da Kitsune', `<p>Reach Saito online at Telegram:</p>${linkRow('t.me/saitodakitsune','https://t.me/saitodakitsune')}`);
-     });
-   }
- } else if(interior.type === 'tavern'){
-   if(Math.hypot(player.x - 60, player.y - 70) < 25){
-     openGuestbook();
-   } else if(Math.hypot(player.x - 140, player.y - 70) < 25){
-     openPrizeExchange();
-   }
- }
-}
-
-function openPrizeExchange(){
- openPanel('🍻 Tavern Carrot Prize Exchange', `
-  <p>Trade your UrbEx carrots for exclusive discounts and rare art!</p>
-  <p><b>Your Carrots:</b> <span style="color:var(--yellow);font-weight:700">🥕 ${state.carrots}</span></p>
-  <div class="prizeGrid">
-    <button class="prizeBtn" data-prize="p5" ${state.carrots<2?'disabled':''}><b>5% Discount Coupon</b><span>Cost: 🥕 2</span></button>
-    <button class="prizeBtn" data-prize="p10" ${state.carrots<4?'disabled':''}><b>10% Discount Coupon</b><span>Cost: 🥕 4</span></button>
-    <button class="prizeBtn" data-prize="p15" ${state.carrots<6?'disabled':''}><b>15% Discount Coupon</b><span>Cost: 🥕 6 (BITEBACK)</span></button>
-    <button class="prizeBtn" data-prize="pArt" ${state.carrots<8?'disabled':''}><b>Rare Art Unlock</b><span>Cost: 🥕 8</span></button>
-  </div>
- `);
-}
-
-function buyPrize(prizeKey){
- const costs = { p5: 2, p10: 4, p15: 6, pArt: 8 };
- const cost = costs[prizeKey];
- if(state.carrots < cost) return;
- state.carrots -= cost; updateHUD(); state.prizes[prizeKey] = true; sfx.badge();
- confetti(100, 80, 40);
- if(prizeKey==='p5'){ openPanel('🎟️ 5% Discount Coupon', '<p>Use coupon code <b>FLUFF5</b> for 5% off at Soft Bite Studio!</p>'); }
- else if(prizeKey==='p10'){ openPanel('🎟️ 10% Discount Coupon', '<p>Use coupon code <b>COVEN10</b> for 10% off!</p>'); }
- else if(prizeKey==='p15'){ openPanel('🎟️ 15% Discount Coupon', '<p>Use coupon code <b>BITEBACK</b> for 25% off!</p>'); }
- else if(prizeKey==='pArt'){ openPanel('🖼️ Rare Art Unlocked', '<p><b>Rare Canvas Art: "BUNNY RECKLESS OVERDRIVE"</b></p><p>You unlocked exclusive gallery artwork! ✨</p>'+linkRow('softbite.studio','https://softbite.studio')); }
-}
-
 function gateLogic(g){
  if(g.id==='cave'){if(state.carrots>=3){state.carrots-=3;state.gates.cave=true;g.gone=true;sfx.unlock();confetti(g.x+8,g.y,50);toast('The cave gate melts away!');announce('Projects Cave unlocked!');updateHUD();}
-  else say('🚪 Hungry Gate',['The neon bars hum hungrily… they smell carrots.',`Feed me 3 carrots to pass. You carry ${state.carrots}. Break pots or UrbEx buildings for carrots.`]);}
+  else say('🚪 Hungry Gate',['The neon bars hum hungrily… they smell carrots.',`Feed me 3 carrots to pass. You carry ${state.carrots}. Break pots — they\'re basically carrot piñatas.`]);}
  else{if(state.keys>0){state.keys--;state.gates.grove=true;g.gone=true;sfx.unlock();confetti(g.x+8,g.y,50);toast('The Grove Key turns! Petals everywhere!');announce('Gallery Grove unlocked!');updateHUD();}
   else say('🚪 Leafy Gate',['A keyhole shaped like a leaf glows softly.','A villager mentioned a glowing pot behind a pink house…']);}}
-
 function breakPot(p){p.broken=true;sfx.pot();burst(p.x,p.y-4,['#cc3300','#ff9c31','#a17c5a'],10);
  addEnt({type:'drop',kind:p.drop,relic:p.relic,x:p.x,y:p.y-2,vy:-70,vx:(rnd()-.5)*40,t:0});
  if(p.drop==='key')announce('A glowing Grove Key popped out!');}
-
 function collectDrop(d){d.gone=true;sfx.pickup();
  if(d.kind==='carrot'){state.carrots++;announce(`Carrot collected! You have ${state.carrots}.`);}
  else if(d.kind==='key'){state.keys++;announce('Grove Key collected!');toast('🔑 Grove Key acquired!');confetti(d.x,d.y,24);}
  else if(d.kind==='relic'){const r=d.relic;
   if(!state.relics.includes(r)){state.relics.push(r);
-   const R=[['TXTERR','Text tools & domain portal.','https://txterr.ju.mp'],['USBunny','A bunny-flavored USB multitool.','https://github.com/softbitestudio/usbunny'],['FURBITS','A Soft Bite Studio passion project — collaboration welcome!','https://fur.uwu.ai'],['Emergent','App-making magic — idea + 20 bucks = cool stuff.','https://app.emergent.sh/register?ref=soft343731']][r];
+   const R=[['CONTEXT','Count your text & tokens.','https://context.uwu.ai'],['USBunny','A bunny-flavored USB multitool.','https://github.com/softbitestudio/usbunny'],['FURBITS','A Soft Bite Studio passion project — collaboration welcome!','https://fur.uwu.ai'],['Emergent','App-making magic — idea + 20 bucks = cool stuff.','https://app.emergent.sh/register?ref=soft343731']][r];
    announce(`Relic found: ${R[0]}!`);confetti(d.x,d.y,30);
    openPanel('💎 Relic: '+R[0],`<p>${R[1]}</p>${linkRow(R[2].replace(/^https?:\/\//,'').slice(0,48),R[2])}`);
    if(state.relics.length===4&&!state.monstah){state.monstah=true;
     const m=ents.find(e=>e.type==='monstah');if(m)m.hidden=false;
     setTimeout(()=>{toast('⚠ Something stirs deep in the cave…');announce('Something stirs deep in the cave.');},600);}}}
  updateHUD();checkDone();}
-
 function checkDone(){if(state.done)return;
  const all=['burrow','tower','village','cave','grove','forest'].every(z=>state.visited[z]);
  if(all&&state.relics.length===4&&state.bossDone&&state.mazeDone){state.done=true;confetti(player.x,player.y-20,120);toast('🏆 RECKLESS COMPLETIONIST!');sfx.badge();
   announce('Congratulations! Every zone, every relic, the Monstah befriended, the maze solved. Reckless Completionist!');}}
-
 /* mailbox (boss-gated) */
 function openMailbox(){
  openPanel('📮 Mailbox — send a letter',`<p>The mailbox hums with magic. Tawny reads everything!</p>${linkRow('xobunrec@gmail.com','mailto:xobunrec@gmail.com')}<p style="font-size:12.5px;opacity:.75">Letters only — this mailbox never gives away secrets. 🔒</p>`);}
-
 /* guestbook */
-const GUESTBOOK_ENDPOINT='';
+const GUESTBOOK_ENDPOINT=''; // set to your API route to persist (Supabase REST, Vercel fn…)
 const guestbook=[];
 const gbOv=document.getElementById('gbOv');
 function openGuestbook(){gbOpen=true;gbOv.style.display='flex';sfx.open();
@@ -566,7 +427,6 @@ document.getElementById('gbForm').addEventListener('submit',async e=>{
  document.getElementById('gbForm').reset();
  closeGuestbook();sfx.badge();confetti(player.x,player.y-14,30);
  toast('📖 Guestbook signed — thank you!');announce('Guestbook signed. Thank you for leaving your pawprint!');});
-
 /* BOSS */
 const ARENA={x0:56*T+9,y0:18*T+10,x1:68*T-9,y1:30*T-6};
 const bossState={active:false,hp:3,x:62*T,y:20.5*T,t:0,fireT:1.2,projs:[],clawT:0,clawCD:0,flash:0,hurtT:0,shake:0};
@@ -618,7 +478,6 @@ function updateBoss(dt){const B=bossState;B.t+=dt;
   if(p.life>6)p.dead=true;
   if(p.x<ARENA.x0-30||p.x>ARENA.x1+30||p.y<ARENA.y0-30||p.y>ARENA.y1+30)p.dead=true;}
  B.projs=B.projs.filter(p=>!p.dead);}
-
 /* MAZE */
 const maze={active:false,t:null,W2:0,H2:0,MT:12,explored:null,gx:0,gy:0,retX:0,retY:0};
 function genMaze(cols,rows){
@@ -654,7 +513,7 @@ function mazeFree(x,y){const hw=3.5,top=y-7,bot=y-1;
 function mazeMove(dt,t){let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);
  if(dx||dy){const l=Math.hypot(dx,dy);dx/=l;dy/=l;
   if(Math.abs(dx)>Math.abs(dy))player.dir=dx>0?'right':'left';else player.dir=dy>0?'down':'up';
-  const sp=(state.hasBatWings?140:76)*dt;
+  const sp=76*dt;
   if(mazeFree(player.x+dx*sp,player.y))player.x+=dx*sp;
   if(mazeFree(player.x,player.y+dy*sp))player.y+=dy*sp;
   player.moving=true;player.step=(t/170|0)%2;}
@@ -662,12 +521,11 @@ function mazeMove(dt,t){let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:
  const tx=(player.x/maze.MT)|0,ty=(player.y/maze.MT)|0;
  maze.explored[ty*maze.W2+tx]=1;
  if(tx===maze.W2-2&&ty===maze.H2-2)exitMaze();}
-
 /* menu */
 const menuOv=document.getElementById('menuOv'),menuCard=document.getElementById('menuCard');
 function openMenu(){menuOpen=true;sfx.open();
  const zs=['burrow','tower','village','cave','grove','forest'];
- const locked=bossState.active||maze.active||interior.active;
+ const locked=bossState.active||maze.active;
  menuCard.innerHTML=`<button class="x" id="mx">✕</button><h2>☰ PAWS — Menu</h2>
   <div class="menugrid"><button class="mlink" id="mResume">▶ Resume</button><button class="mlink" id="mClassic">⤢ Classic Mode</button><button class="mlink" id="mAtlas">🐰 Sprite Sheet</button><button class="mlink" id="mThanks">💜 Thank Youuu</button></div>
   <p style="margin:12px 0 2px"><b>Fur color:</b></p><div class="swatches" id="sws"></div>
@@ -690,7 +548,6 @@ function openMenu(){menuOpen=true;sfx.open();
   mm.appendChild(b);});
  document.getElementById('mx').onclick=closeMenu;}
 function closeMenu(){menuOpen=false;menuOv.style.display='none';sfx.close();}
-
 function showAtlas(){openPanel('🐰 Sprite Sheet — generated at runtime','<p style="font-size:12px;opacity:.85">Every sprite is drawn by code (no image files = instant loading):</p><canvas id="atlasC" width="520" height="300" style="width:100%;image-rendering:pixelated;border:1px solid #35235a;border-radius:10px;background:#0a0512"></canvas>');
  const c=document.getElementById('atlasC'),a=c.getContext('2d');a.imageSmoothingEnabled=false;a.font='700 9px Fredoka';a.fillStyle='#8f7fb8';
  Object.values(FURS).forEach((fur,i)=>{const x=20+i*82;['down','up','side'].forEach((d,j)=>drawRabbit(a,x+j*26,44,d,(i+j)%2,fur,2));a.fillText(Object.keys(FURS)[i],x,62);});
@@ -705,7 +562,6 @@ function showAtlas(){openPanel('🐰 Sprite Sheet — generated at runtime','<p 
  drawWarp(a,370,184,0,2);a.fillText('warp hole',352,200);drawTavern(a,440,182,2);a.fillText('tavern',422,200);
  drawPodium(a,60,252,2);a.fillText('podium',42,268);drawGate(a,120,240,16,24,0,2);a.fillText('gate',112,268);
  a.fillStyle='#fc68f6';a.fillText('BUNVENTURES ATLAS v2.0 — palette: bunrec.com',20,290);}
-
 /* classic */
 const classicEl=document.getElementById('classic');
 function setClassic(on){classicOn=on;classicEl.style.display=on?'block':'none';document.getElementById('app').style.display=on?'none':'flex';
@@ -713,24 +569,17 @@ function setClassic(on){classicOn=on;classicEl.style.display=on?'block':'none';d
 document.getElementById('classicBtn').onclick=()=>setClassic(true);
 document.getElementById('gameBtn').onclick=()=>setClassic(false);
 document.getElementById('menuBtn').onclick=()=>{if(!classicOn&&!introActive)openMenu();};
-
 /* HUD / toast */
 const badgesEl=document.getElementById('badges');
 [['burrow',ZONES.burrow.col,'Home Burrow'],['forest',ZONES.forest.col,'Home Forest'],['tower',ZONES.tower.col,'About Tower'],['village',ZONES.village.col,'Contact Village'],['cave',ZONES.cave.col,'Projects Cave'],['grove',ZONES.grove.col,'Gallery Grove'],['boss','#24ff00','Monstah Befriended'],['maze','#ebff00','Maze Solver']].forEach(b=>{
  const d=document.createElement('span');d.className='bdot';d.id='bd_'+b[0];d.style.color=b[1];d.title=b[2]+' badge';badgesEl.appendChild(d);});
-function updateHUD(){
-  document.getElementById('hCarrot').textContent='🥕 '+state.carrots;
-  document.getElementById('hKey').textContent='🔑 '+state.keys;
-  document.getElementById('hRelic').textContent='💎 '+state.relics.length+'/4';
-  document.getElementById('hWings').style.display = state.hasBatWings ? 'inline-block' : 'none';
-}
+function updateHUD(){document.getElementById('hCarrot').textContent='🥕 '+state.carrots;document.getElementById('hKey').textContent='🔑 '+state.keys;document.getElementById('hRelic').textContent='💎 '+state.relics.length+'/4';}
 const toastEl=document.getElementById('zoneToast');let toastT=null;
 function toast(m){toastEl.textContent=m;toastEl.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>toastEl.style.opacity=0,2200);}
 function enterZone(z){if(z===curZone&&state.visited[z])return;curZone=z;
  if(!state.visited[z]){state.visited[z]=true;const d=document.getElementById('bd_'+z);if(d)d.classList.add('on');
   sfx.badge();toast('— '+ZONES[z].name+' —');announce('Entered '+ZONES[z].name+'. Badge earned!');
   if(!RM)confetti(player.x,player.y-14,26);checkDone();}}
-
 /* particles */
 let parts=[];
 function burst(x,y,cols,n){if(!particlesOn)return;for(let i=0;i<n;i++)parts.push({x,y,vx:(rnd()-.5)*90,vy:-30-rnd()*70,g:220,life:.5+rnd()*.4,t:0,c:cols[(rnd()*cols.length)|0],s:1+rnd()*2});}
@@ -738,28 +587,12 @@ function confetti(x,y,n){burst(x,y,['#fc68f6','#00d1ff','#ebff00','#24ff00','#ff
 let fireflies=[],caveMotes=[];
 function initAmbient(){for(let i=0;i<26;i++)fireflies.push({x:rnd()*MW*T,y:rnd()*MH*T,p:rnd()*7,s:.4+rnd()*.8});
  for(let i=0;i<18;i++)caveMotes.push({x:(56+rnd()*12)*T,y:(18+rnd()*11)*T,p:rnd()*7});}
-
 /* sprites */
 function P(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(x|0,y|0,Math.ceil(w),Math.ceil(h));}
 function drawRabbit(c,x,y,dir,frame,fur,u=1){
  const L=shade(fur,.55),D=shade(fur,-.25),ER='#ffabd3',bob=(frame&&!RM)?-u:0,sw=RM?0:Math.sin(performance.now()/280+x)*u;
  c.save();c.translate(x,y+bob);
  c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(0,1.5*u,6*u,2*u,0,0,7);c.fill();
- 
- /* Bat Wings Sprite Overlay */
- if(state.hasBatWings){
-   c.save();
-   c.fillStyle='#2b113a';
-   c.strokeStyle='#fc68f6';
-   c.lineWidth=u*.8;
-   const flap = Math.sin(performance.now()/120) * 3 * u;
-   // Left wing
-   c.beginPath(); c.moveTo(-3*u, -8*u); c.lineTo(-15*u, -16*u + flap); c.lineTo(-9*u, -4*u); c.lineTo(-14*u, 2*u + flap); c.lineTo(-3*u, -3*u); c.fill(); c.stroke();
-   // Right wing
-   c.beginPath(); c.moveTo(3*u, -8*u); c.lineTo(15*u, -16*u + flap); c.lineTo(9*u, -4*u); c.lineTo(14*u, 2*u + flap); c.lineTo(3*u, -3*u); c.fill(); c.stroke();
-   c.restore();
- }
-
  if(dir==='left')c.scale(-1,1);
  const side=(dir==='left'||dir==='right');
  P(c,-4*u,-2*u,3*u,2*u,D);P(c,1*u,-2*u,3*u,2*u,D);
@@ -772,17 +605,10 @@ function drawRabbit(c,x,y,dir,frame,fur,u=1){
  if(dir==='down'){P(c,-2.6*u,-11.5*u,1.4*u,1.8*u,'#1b1030');P(c,1.2*u,-11.5*u,1.4*u,1.8*u,'#1b1030');P(c,-3.6*u,-9.6*u,1.4*u,1*u,'rgba(252,104,246,.55)');P(c,2.2*u,-9.6*u,1.4*u,1*u,'rgba(252,104,246,.55)');P(c,-.5*u,-10*u,1*u,1*u,'#fc68f6');}
  else if(side){P(c,1.6*u,-11.5*u,1.5*u,1.8*u,'#1b1030');P(c,3*u,-10*u,1*u,1*u,'#fc68f6');P(c,-3.4*u,-4*u,2.6*u,2.4*u,'#fff');}
  c.restore();}
-
 function drawPot(c,x,y,u=1,broken=false){c.save();c.translate(x,y);
  c.fillStyle='rgba(0,0,0,.25)';c.beginPath();c.ellipse(0,u,5*u,1.6*u,0,0,7);c.fill();
  if(broken){P(c,-4*u,-1*u,3*u,2*u,'#cc3300');P(c,1*u,-1.5*u,3*u,2*u,'#a14a1e');P(c,-1*u,-3*u,2*u,2*u,'#ff9c31');c.restore();return;}
  P(c,-4*u,-7*u,8*u,7*u,'#cc3300');P(c,-4.6*u,-9*u,9.2*u,2.6*u,'#a14a1e');P(c,-3*u,-8.4*u,6*u,1.2*u,'#ff9c31');P(c,-3*u,-6*u,2*u,4*u,'rgba(255,156,49,.55)');c.restore();}
-function drawShroom(c,x,y,u=1){c.save();c.translate(x,y);
- P(c,-2*u,-4*u,4*u,4*u,'#fffdf4');P(c,-6*u,-9*u,12*u,5*u,'#fc2850');P(c,-4*u,-11*u,8*u,2*u,'#fc2850');
- P(c,-3*u,-8*u,2*u,2*u,'#fff');P(c,2*u,-7*u,2*u,2*u,'#fff');P(c,-1*u,-10*u,2*u,1.5*u,'#fff');c.restore();}
-function drawUrbexBuilding(c,x,y,u=1){c.save();c.translate(x,y);
- P(c,-14*u,-12*u,28*u,12*u,'#3d304a');P(c,-16*u,-16*u,32*u,5*u,'#211530');P(c,-5*u,-7*u,10*u,7*u,'#150a22');
- P(c,-10*u,-9*u,4*u,4*u,'#ebff00');P(c,6*u,-9*u,4*u,4*u,'#00d1ff');c.restore();}
 function drawKey(c,x,y,t,u=1){const b=Math.sin(t/300+x)*1.4*u;c.save();c.translate(x,y+b);c.shadowColor='#ebff00';c.shadowBlur=8*u;
  P(c,-1*u,-8*u,2*u,7*u,'#ebff00');P(c,-3*u,-8*u,2*u,2*u,'#ebff00');P(c,1*u,-8*u,2*u,2*u,'#ebff00');P(c,0,-1*u,2*u,1.6*u,'#ffb800');P(c,0,2*u,2.6*u,1.6*u,'#ffb800');c.restore();}
 function drawCarrot(c,x,y,t,u=1){const b=Math.sin(t/260+x)*1.2*u;c.save();c.translate(x,y+b);c.shadowColor='#ff9c31';c.shadowBlur=6*u;
@@ -837,7 +663,6 @@ function drawMonstah(c,x,y,t,u=1){c.save();c.translate(x,y);const j=RM?0:(rnd()-
  P(c,-6*u+j,-10*u,12*u,10*u,'#15073d');P(c,-4*u+j,-13*u,8*u,4*u,'#15073d');
  P(c,-3.4*u+j,-11*u,2.4*u,2.4*u,'#24ff00');P(c,1*u+j,-11*u,2.4*u,2.4*u,'#fc68f6');
  P(c,-2*u+j,-6*u,1.4*u,2.4*u,'#fff');P(c,.6*u+j,-6*u,1.4*u,2.4*u,'#fff');c.restore();}
-
 /* tiles */
 const TILECOL={[T_G]:'#4e9e4a',[T_G2]:'#55a851',[T_DIRT]:'#b98a5a',[T_CAVE]:'#241833',[T_PLANK]:'#5b3f7a',[T_RUG]:'#d8489f',[T_MINT]:'#57b06a',[T_PLAZA]:'#a8758f',[T_SAND]:'#c98f4e',[T_HEDGE]:'#2e6b34',[T_ROCK]:'#4a4a66',[T_BRICK]:'#6e4a9e'};
 const TILECOL2={[T_G]:'#54a64e',[T_G2]:'#4f9e4b',[T_CAVE]:'#2a1c3c',[T_PLANK]:'#664a86',[T_MINT]:'#5eba72',[T_PLAZA]:'#b27f98',[T_SAND]:'#d19a58',[T_DIRT]:'#c2945f'};
@@ -856,38 +681,23 @@ function drawTile(c,x,y){const t=at(x,y),px=x*T,py=y*T;
  else if(d===5){c.fillStyle='#6a6a8a';c.fillRect(px+5,py+10,3,2);}
  else if(d===6){c.fillStyle='#fc68f6';c.fillRect(px+6,py+9,4,3);c.fillStyle='#fff';c.fillRect(px+7,py+10,1,1);}
  else if(d===7){c.fillStyle='#ffabd3';c.fillRect(px+4,py+5,2,2);c.fillRect(px+6,py+4,2,2);c.fillRect(px+5,py+7,2,2);c.fillStyle='#fff72b';c.fillRect(px+5,py+6,1,1);}}
-
 /* collision */
-function tileSolid(px,py){if(state.hasBatWings)return false;const tx=(px/T)|0,ty=(py/T)|0;if(tx<0||ty<0||tx>=MW||ty>=MH)return true;return !!SOLID[at(tx,ty)];}
-function entSolid(px,py){if(state.hasBatWings)return false;for(const e of ents){if(e.broken||e.gone||e.hidden)continue;if(e.sw!==undefined&&px>=e.sx&&px<=e.sx+e.sw&&py>=e.sy&&py<=e.sy+e.sh)return true;}return false;}
-function boxFree(x,y){if(state.hasBatWings)return true;const hw=4.5,top=y-8,bot=y-1;
+function tileSolid(px,py){const tx=(px/T)|0,ty=(py/T)|0;if(tx<0||ty<0||tx>=MW||ty>=MH)return true;return !!SOLID[at(tx,ty)];}
+function entSolid(px,py){for(const e of ents){if(e.broken||e.gone||e.hidden)continue;if(e.sw!==undefined&&px>=e.sx&&px<=e.sx+e.sw&&py>=e.sy&&py<=e.sy+e.sh)return true;}return false;}
+function boxFree(x,y){const hw=4.5,top=y-8,bot=y-1;
  for(const c of[[x-hw,top],[x+hw,top],[x-hw,bot],[x+hw,bot],[x-hw,(top+bot)/2],[x+hw,(top+bot)/2]])
   if(tileSolid(c[0],c[1])||entSolid(c[0],c[1]))return false;return true;}
-
 /* update */
 let last=0,camX=0,camY=0,zoom=3,VW=0,VH=0;
 function update(dt,t){
  const active=!isInputDisabled&&!dlg&&!panelOpen&&!menuOpen&&!classicOn&&!gbOpen;
- if(interior.active){
-  if(active){
-    let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);
-    if(dx||dy){const l=Math.hypot(dx,dy);dx/=l;dy/=l;
-      if(Math.abs(dx)>Math.abs(dy))player.dir=dx>0?'right':'left';else player.dir=dy>0?'down':'up';
-      const sp=(state.hasBatWings?140:76)*dt;
-      player.x=clamp(player.x+dx*sp, 35, 165);
-      player.y=clamp(player.y+dy*sp, 45, 145);
-      player.moving=true;player.step=(t/170|0)%2;
-    } else { player.moving=false; player.step=0; }
-  }
-  return;
- }
  if(maze.active){if(active)mazeMove(dt,t);}
  else{
   let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);
   if(!active){dx=0;dy=0;}
   if(dx||dy){const l=Math.hypot(dx,dy);dx/=l;dy/=l;
    if(Math.abs(dx)>Math.abs(dy))player.dir=dx>0?'right':'left';else player.dir=dy>0?'down':'up';
-   const sp=(state.hasBatWings?140:76)*dt;
+   const sp=76*dt;
    if(boxFree(player.x+dx*sp,player.y))player.x+=dx*sp;
    if(boxFree(player.x,player.y+dy*sp))player.y+=dy*sp;
    player.moving=true;player.step=(t/170|0)%2;}
@@ -910,23 +720,13 @@ function update(dt,t){
   camX=mw<=VW?(mw-VW)/2:clamp(player.x-VW/2,0,mw-VW);camY=mh<=VH?(mh-VH)/2:clamp(player.y-VH/2,0,mh-VH);}
  else if(bossState.active){camX=MW*T<=VW?(MW*T-VW)/2:clamp(62*T-VW/2,0,MW*T-VW);camY=MH*T<=VH?(MH*T-VH)/2:clamp(24*T-VH/2,0,MH*T-VH);}
  else{camX=MW*T<=VW?(MW*T-VW)/2:clamp(player.x-VW/2,0,MW*T-VW);camY=MH*T<=VH?(MH*T-VH)/2:clamp(player.y-VH/2,0,MH*T-VH);}}
-
 /* render */
 function render(t){
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#0a0512';ctx.fillRect(0,0,cvs.width,cvs.height);
  const dpr=devicePixelRatio||1;
  let shx=0,shy=0;
  if(bossState.active&&bossState.shake>0){shx=(rnd()-.5)*bossState.shake;shy=(rnd()-.5)*bossState.shake;}
-
- if(state.switcherooT > 0){
-   state.switcherooT -= 0.016;
-   ctx.filter = `hue-rotate(${Math.sin(performance.now()/120)*180 + 180}deg) invert(0.7)`;
- } else {
-   ctx.filter = 'none';
- }
-
  ctx.setTransform(dpr*zoom,0,0,dpr*zoom,-(camX+shx)*dpr*zoom,-(camY+shy)*dpr*zoom);
- if(interior.active){renderInterior(t);return;}
  if(maze.active){renderMaze(t);drawMinimap(t);return;}
  const x0=Math.max(0,(camX/T|0)-1),y0=Math.max(0,(camY/T|0)-1),x1=Math.min(MW-1,((camX+VW)/T|0)+1),y1=Math.min(MH-1,((camY+VH)/T|0)+1);
  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)drawTile(ctx,x,y);
@@ -940,8 +740,6 @@ function render(t){
   if(e.type==='__player'){drawRabbit(ctx,player.x,player.y,player.dir,player.moving?player.step:0,player.fur,1);continue;}
   switch(e.type){
    case'tree':drawTree(ctx,e.x,e.y,1);break;
-   case'shroom':drawShroom(ctx,e.x,e.y,1);break;
-   case'urbex':drawUrbexBuilding(ctx,e.x,e.y,1);break;
    case'pot':drawPot(ctx,e.x,e.y,1,e.broken);
     if(e.glow&&!e.broken){ctx.globalAlpha=.5+.3*Math.sin(t/300);ctx.shadowColor='#ebff00';ctx.shadowBlur=10;ctx.strokeStyle='#ebff00';ctx.beginPath();ctx.arc(e.x,e.y-5,9,0,7);ctx.stroke();ctx.shadowBlur=0;ctx.globalAlpha=1;}break;
    case'crystal':drawCrystal(ctx,e.x,e.y,e.hue,1);break;
@@ -992,32 +790,6 @@ function render(t){
  if(bossState.active)renderBoss(t);
  if(target&&!dlg&&!panelOpen&&!menuOpen){ctx.globalAlpha=.5+.4*Math.sin(t/180);ctx.strokeStyle='#ebff00';ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(target.x,target.y-6,12,0,7);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
  drawMinimap(t);}
-
-function renderInterior(t){
- const rx = 20, ry = 20, rw = 160, rh = 120;
- camX = 0; camY = 0;
- ctx.fillStyle='#090412'; ctx.fillRect(0,0,VW*2,VH*2);
- ctx.fillStyle='#1d112e'; ctx.fillRect(rx,ry,rw,rh);
- ctx.strokeStyle='#fc68f6'; ctx.lineWidth=2; ctx.strokeRect(rx,ry,rw,rh);
- 
- // Door exit at bottom
- ctx.fillStyle='#8f73ff'; ctx.fillRect(rx+rw/2-12, ry+rh-6, 24, 6);
- ctx.font='700 8px Fredoka'; ctx.fillStyle='#fff'; ctx.fillText('EXIT', rx+rw/2-9, ry+rh-8);
-
- if(interior.type === 'urbex'){
-   ctx.font='700 10px Chewy'; ctx.fillStyle='var(--yellow)'; ctx.fillText(interior.name, rx+10, ry+16);
-   if(interior.hasCarrot){ drawCarrot(ctx, 100, 80, t, 1.2); }
-   if(interior.isSaito){ drawRabbit(ctx, 100, 70, 'down', 0, '#fc68f6', 1); }
- } else if(interior.type === 'tavern'){
-   ctx.font='700 11px Chewy'; ctx.fillStyle='var(--pink)'; ctx.fillText('🍻 Fluff Coven Tavern', rx+10, ry+16);
-   drawPodium(ctx, 60, 70, 1);
-   ctx.font='700 8px Fredoka'; ctx.fillStyle='var(--cyan)'; ctx.fillText('Guestbook', 44, 82);
-   P(ctx, 130, 60, 20, 14, '#ff9c31');
-   ctx.fillStyle='#fff'; ctx.fillText('Prizes 🥕', 124, 82);
- }
- drawRabbit(ctx, player.x, player.y, player.dir, player.moving?player.step:0, player.fur, 1);
-}
-
 function renderBoss(t){const B=bossState;
  ctx.save();ctx.globalAlpha=.5+.3*Math.sin(t/300);ctx.strokeStyle='#fc68f6';ctx.setLineDash([4,4]);ctx.strokeRect(ARENA.x0,ARENA.y0,ARENA.x1-ARENA.x0,ARENA.y1-ARENA.y0);ctx.setLineDash([]);ctx.restore();
  drawMonstah(ctx,B.x,B.y+Math.sin(t/400)*2,t,2.4);
@@ -1029,7 +801,6 @@ function renderBoss(t){const B=bossState;
   ctx.beginPath();ctx.arc(player.x+f[0]*6,player.y-6+f[1]*6,20,base-0.95,base+0.95);ctx.stroke();
   ctx.strokeStyle='#00d1ff';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(player.x+f[0]*6,player.y-6+f[1]*6,15,base-0.8,base+0.8);ctx.stroke();ctx.restore();}
  if(B.hurtT>0){ctx.fillStyle=`rgba(252,40,80,${B.hurtT*.5})`;ctx.fillRect(camX,camY,VW,VH);}}
-
 function renderMaze(t){const MT=maze.MT,W2=maze.W2,H2=maze.H2;
  ctx.fillStyle='#120a24';ctx.fillRect(0,0,W2*MT,H2*MT);
  for(let y=0;y<H2;y++)for(let x=0;x<W2;x++){if(maze.t[y*W2+x]!==1)continue;
@@ -1044,7 +815,6 @@ function renderMaze(t){const MT=maze.MT,W2=maze.W2,H2=maze.H2;
  glow(player.x,player.y-6,62,'rgba(255,156,49,.34)');glow((W2-1.5)*MT,(H2-1.5)*MT,52,'rgba(0,209,255,.3)');glow(maze.gx,maze.gy-6,30,'rgba(36,255,0,.22)');
  ctx.globalCompositeOperation='source-over';
  for(const p of parts){ctx.globalAlpha=1-p.t/p.life;ctx.fillStyle=p.c;ctx.fillRect(p.x,p.y,p.s,p.s);}ctx.globalAlpha=1;}
-
 function drawMinimap(t){mmx.setTransform(1,0,0,1,0,0);mmx.clearRect(0,0,148,100);mmx.fillStyle='#0a0512';mmx.fillRect(0,0,148,100);
  if(maze.active){const s=2;
   for(let y=0;y<maze.H2;y++)for(let x=0;x<maze.W2;x++)
@@ -1060,12 +830,11 @@ function drawMinimap(t){mmx.setTransform(1,0,0,1,0,0);mmx.clearRect(0,0,148,100)
  if(!state.gates.cave){mmx.fillStyle='#ebff00';mmx.fillRect(2+55*s,2+23.4*s,3,3);}
  if(!state.gates.grove){mmx.fillStyle='#ebff00';mmx.fillRect(2+36.4*s,2+35*s,3,3);}
  if(Math.sin(t/300)>-.2){mmx.fillStyle='#fff';mmx.shadowColor='#fff';mmx.shadowBlur=4;mmx.fillRect(2+(player.x/T)*s-1,2+(player.y/T)*s-1,3,3);mmx.shadowBlur=0;}}
-
 /* intro sequence */
 const INTRO=[
  '✦ Welcome to BUNVENTURES ✦ — the world of bunrec.com, rebuilt as a tiny realm.',
  'You are a little bun in the Home Burrow of Tawny — artist, developer, master gardener, fursuiter, bumble bunny.',
- 'Wander with WASD or the arrow keys. Press SPACE to talk, smash pots, explore 7 UrbEx buildings, click mushrooms, and poke everything glowy.',
+ 'Wander with WASD or the arrow keys. Press SPACE to talk, smash pots, and poke everything glowy.',
  'Feed the cave gate 3 carrots 💎 · find the village key 🎨 · sign the tavern guestbook 🍻 · and whatever you do… don\'t summon the Monstah. (Summon the Monstah.)'];
 let introIdx=0;
 const introOv=document.getElementById('introOv'),introText=document.getElementById('introText');
@@ -1074,12 +843,11 @@ function advanceIntro(){introIdx++;sfx.talk();
  if(introIdx>=INTRO.length){
   introOv.style.opacity=0;
   setTimeout(()=>{introOv.style.display='none';},620);
-  introActive=false;isInputDisabled=false;
+  introActive=false;isInputDisabled=false;   // hand control back
   announce('Intro finished. You are in the Home Burrow. Explore!');
   toast('— Home Burrow —');return;}
  introText.textContent=INTRO[introIdx];announce(INTRO[introIdx]);}
 introOv.addEventListener('click',()=>advanceIntro());
-
 /* loop / resize */
 function resize(){const st=document.getElementById('stage'),dpr=devicePixelRatio||1;
  cvs.width=st.clientWidth*dpr;cvs.height=st.clientHeight*dpr;
@@ -1088,13 +856,11 @@ function resize(){const st=document.getElementById('stage'),dpr=devicePixelRatio
 addEventListener('resize',resize);
 function loop(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;
  if(!classicOn){update(dt,t);render(t);}requestAnimationFrame(loop);}
-
 /* stars */
 (function(){const w=document.getElementById('stars');
  for(let i=0;i<44;i++){const s=document.createElement('div');s.className='star';
   s.style.left=rnd()*100+'%';s.style.top=rnd()*100+'%';s.style.animationDelay=(rnd()*3)+'s';s.style.animationDuration=(2+rnd()*3)+'s';
   if(rnd()<.3)s.style.background=rnd()<.5?'#fc68f6':'#9ce1ff';w.appendChild(s);}})();
-
 /* boot */
 genMap();buildWorld();initAmbient();updateHUD();resize();
 state.visited.burrow=true;document.getElementById('bd_burrow').classList.add('on');
@@ -1103,3 +869,28 @@ requestAnimationFrame(loop);
 </script>
 </body>
 </html>
+<script data-huggingchat-badge="script">
+(function () {
+	try {
+		if (document.querySelector("[data-huggingchat-badge]:not(script)")) return;
+		var host = document.createElement("div");
+		host.setAttribute("data-huggingchat-badge", "");
+		var styles = [["all","initial"],["position","fixed"],["right","12px"],["bottom","12px"],["z-index","2147483647"],["display","block"],["visibility","visible"],["opacity","1"],["pointer-events","auto"],["width","auto"],["height","auto"],["margin","0"],["padding","0"],["max-width","none"],["max-height","none"],["transform","none"],["filter","none"],["clip-path","none"],["color-scheme","light"]];
+		for (var i = 0; i < styles.length; i++) {
+			host.style.setProperty(styles[i][0], styles[i][1], "important");
+		}
+		host.attachShadow({ mode: "closed" }).innerHTML = "<style>\n:host { all: initial; }\na {\n  display: flex;\n  align-items: center;\n  gap: 5px;\n  box-sizing: border-box;\n  height: 26px;\n  padding: 0 9px 0 7px;\n  border-radius: 999px;\n  border: 1px solid rgba(0, 0, 0, 0.07);\n  background: rgba(255, 255, 255, 0.92);\n  -webkit-backdrop-filter: saturate(180%) blur(8px);\n  backdrop-filter: saturate(180%) blur(8px);\n  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 6px 16px rgba(0, 0, 0, 0.06);\n  color: #111827;\n  font: 500 11px/1 ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif;\n  text-decoration: none;\n  white-space: nowrap;\n  opacity: 0.72;\n  transition: opacity 0.15s ease, transform 0.15s ease;\n}\na:hover, a:focus-visible { opacity: 1; transform: translateY(-1px); }\nsvg { width: 14px; height: 14px; flex: none; }\n@media print { a { display: none; } }\n<\/style><a href=\"https://huggingface.co/chat\" target=\"_blank\" rel=\"noopener noreferrer nofollow\"><svg viewBox=\"0 0 32 32\" fill=\"none\" aria-hidden=\"true\"><path d=\"M16.0006 25.9992C13.8266 25.999 11.7118 25.2901 9.97686 23.9799C8.2419 22.6698 6.98127 20.8298 6.38599 18.7388C5.79071 16.6478 5.89323 14.4198 6.678 12.3923C7.46278 10.3648 8.88705 8.64837 10.735 7.50308C12.5829 6.35779 14.7538 5.84606 16.9187 6.04544C19.0837 6.24481 21.1246 7.14442 22.7323 8.60795C24.34 10.0715 25.4268 12.0192 25.8281 14.1559C26.2293 16.2926 25.9232 18.5019 24.9561 20.449C24.7703 20.8042 24.7223 21.2155 24.8211 21.604L25.4211 23.8316C25.4803 24.0518 25.4805 24.2837 25.4216 24.5039C25.3627 24.7242 25.2468 24.925 25.0856 25.0862C24.9244 25.2474 24.7235 25.3633 24.5033 25.4222C24.283 25.4811 24.0512 25.4809 23.831 25.4217L21.6034 24.8217C21.2172 24.7248 20.809 24.7729 20.4558 24.9567C19.0683 25.6467 17.5457 26.0068 16.0006 26.0068V25.9992Z\" fill=\"currentColor\"/><path d=\"M9.62598 16.0013C9.62598 15.3799 10.1294 14.8765 10.7508 14.8765C11.3721 14.8765 11.8756 15.3799 11.8756 16.0013C11.8756 17.0953 12.3102 18.1448 13.0838 18.9184C13.8574 19.692 14.9069 20.1266 16.001 20.1267C17.095 20.1267 18.1445 19.692 18.9181 18.9184C19.6918 18.1448 20.1264 17.0953 20.1264 16.0013C20.1264 15.3799 20.6299 14.8765 21.2512 14.8765C21.8725 14.8765 22.3759 15.3799 22.3759 16.0013C22.3759 17.6921 21.7046 19.3137 20.509 20.5093C19.3134 21.7049 17.6918 22.3762 16.001 22.3762C14.3102 22.3762 12.6885 21.7049 11.4929 20.5093C10.2974 19.3137 9.62598 17.6921 9.62598 16.0013Z\" fill=\"#fff\"/><\/svg><span>Made with HuggingChat<\/span><\/a>";
+		function attach() {
+			var parent = document.body || document.documentElement;
+			if (parent && host.parentNode !== parent) parent.appendChild(host);
+		}
+		attach();
+		// Artifacts that rewrite document.body wholesale would drop the badge.
+		if (document.body && typeof MutationObserver === "function") {
+			new MutationObserver(attach).observe(document.body, { childList: true });
+		} else {
+			document.addEventListener("DOMContentLoaded", attach);
+		}
+	} catch (e) {}
+})();
+</script>
